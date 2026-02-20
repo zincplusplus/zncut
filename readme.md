@@ -1,6 +1,6 @@
 # yt-cut
 
-the fastest command line tool for removing segments from pre-downloaded youtube videos with frame-accurate cuts
+the fastest command line tool for removing ads from pre-downloaded youtube videos with frame-accurate cuts
 
 ## Dependencies
 
@@ -15,14 +15,14 @@ python3 yt-cut.py --input=path/to/video.mp4 --id=VIDEO_ID --output_dir=path/to/o
 
 ## Arguments
 
-| Argument | Description | Required |
-|---|---|---|
-| `--input` | Path to the video file | Yes |
-| `--id` | YouTube video ID | Yes |
+| Argument       | Description                   | Required             |
+| -------------- | ----------------------------- | -------------------- |
+| `--input`      | Path to the video file        | Yes                  |
+| `--id`         | YouTube video ID              | Yes                  |
 | `--output_dir` | Folder to write output.mp4 to | No (defaults to `.`) |
 
 ## Example
 
 ```bash
-python3 yt-cut.py --input=path/to/video.mp4 --id=SqD_8FGk89o --output_dir=./out/
+python3 yt-cut.py --input=path/to/video.mp4 --id=dQw4w9WgXcQ --output_dir=./out/
 ```

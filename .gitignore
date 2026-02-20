@@ -1,0 +1,10 @@
+test/sources/*/source.mp4
+test/sources/*/output.mp4
+test/sources/*/segment_*.mp4
+concat.txt
+__pycache__/
+*.pyc
+.DS_Store
+scratchpad.md
+videos.txt
+download.sh

@@ -24,5 +24,5 @@ python3 yt-cut.py --input=path/to/video.mp4 --id=VIDEO_ID --output_dir=path/to/o
 ## Example
 
 ```bash
-python3 yt-cut.py --input=video.mp4 --id=SqD_8FGk89o --output_dir=./out/
+python3 yt-cut.py --input=path/to/video.mp4 --id=SqD_8FGk89o --output_dir=./out/
 ```

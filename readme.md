@@ -1,4 +1,4 @@
-# yt-cut
+# zncut
 
 the fastest command line tool for removing ads from pre-downloaded youtube videos with frame-accurate cuts
 
@@ -10,7 +10,7 @@ the fastest command line tool for removing ads from pre-downloaded youtube video
 ## Usage
 
 ```bash
-python3 yt-cut.py --input=path/to/video.mp4 --id=VIDEO_ID --output_dir=path/to/output/
+python3 zncut.py --input=path/to/video.mp4 --id=VIDEO_ID --output_dir=path/to/output/
 ```
 
 ## Arguments
@@ -24,5 +24,5 @@ python3 yt-cut.py --input=path/to/video.mp4 --id=VIDEO_ID --output_dir=path/to/o
 ## Example
 
 ```bash
-python3 yt-cut.py --input=path/to/video.mp4 --id=dQw4w9WgXcQ --output_dir=./out/
+python3 zncut.py --input=path/to/video.mp4 --id=dQw4w9WgXcQ --output_dir=./out/
 ```

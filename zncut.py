@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import sys, json, subprocess, os, argparse, bisect, urllib.request, urllib.parse, time
+import sys, json, subprocess, os, argparse, bisect, urllib.request, urllib.parse, time, tempfile, shutil
 from pathlib import Path
 
 #
@@ -17,6 +17,17 @@ def fetchSegments(videoId, categories=['sponsor', 'selfpromo', 'interaction']):
       if e.code == 404:
           return []
       raise
+
+def parseSegments(text):
+  # "250.3-330.1,600-645.5" -> same shape as the SponsorBlock response
+  segments = []
+  for pair in text.split(','):
+    start, end = pair.strip().split('-')
+    start, end = float(start), float(end)
+    if end <= start:
+      raise ValueError(f"Segment end must be after its start: {pair}")
+    segments.append({'segment': [start, end]})
+  return sorted(segments, key=lambda seg: seg['segment'][0])
 
 def getPrevKeyframe(keyframes, frame):
   i = bisect.bisect_right(keyframes, frame);
@@ -37,6 +48,7 @@ def main():
   parser.add_argument('--input')
   # parser.add_argument('--delta', type=float, default=0.3)
   parser.add_argument('--id')
+  parser.add_argument('--segments', help='Cut these instead of SponsorBlock segments, in seconds: 250.3-330.1,600-645.5')
   parser.add_argument('--output', default=None)
   args = parser.parse_args()
 
@@ -44,9 +56,16 @@ def main():
     print("Missing path to video. You need to provide it like this --input path/to/video.mp4")
     exit(1)
 
-  if not args.id:
-    print("Missing YouTube video id. You need to provide it like this --id SqD_8FGk89o otherwise I can't figure out the sponsors")
+  if not args.id and not args.segments:
+    print("Missing YouTube video id. You need to provide it like this --id SqD_8FGk89o otherwise I can't figure out the sponsors (or pass --segments 250.3-330.1)")
     exit(1)
+
+  if args.segments:
+    try:
+      segments = parseSegments(args.segments)
+    except ValueError as e:
+      print(f"Invalid --segments: {e}. Use seconds like this --segments 250.3-330.1,600-645.5")
+      exit(1)
 
   if not Path(args.input).exists():
     print(f"Video file not found: {args.input}")
@@ -61,8 +80,8 @@ def main():
   #
   start_time = time.time()
   video = args.input;
-  videoId = args.id
-  segments = fetchSegments(videoId)
+  if not args.segments:
+    segments = fetchSegments(args.id)
   if not segments:
     print("No sponsor segments found, nothing to cut")
     exit(0)
@@ -155,7 +174,8 @@ def main():
   #
   # SPLITTING VIDEO INTO SEGMENTS TO REMOVE ADS
   #
-  outputDir = Path(args.output).parent
+  # own temp folder per run, so several cuts can share an output folder
+  outputDir = Path(tempfile.mkdtemp(prefix='zncut_', dir=Path(args.output).parent))
   for i, seg in enumerate(keepSegments):
     print(f"Processing segment {i+1}/{len(keepSegments)}({seg['start']:.2f}s → {seg['end']:.2f}s)...")
 
@@ -200,10 +220,7 @@ def main():
       args.output
   ])
 
-  for i in range(len(keepSegments)):
-    os.remove(str(outputDir / f'segment_{i+1}.mp4'))
-
-  os.remove(concatFile)
+  shutil.rmtree(outputDir)
 
   elapsed = time.time() - start_time
   minutes, seconds = divmod(int(elapsed), 60)

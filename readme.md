@@ -37,6 +37,14 @@ zncut --input path/to/video.mp4 --segments 250.3-330.1,600-645.5
 zncut --input path/to/video.mp4 --id dQw4w9WgXcQ --output out.mp4
 ```
 
+## Tests
+
+Frame- and audio-accuracy tests (need ffmpeg, numpy, pytest):
+
+```bash
+python -m pytest tests
+```
+
 ## Publishing to PyPI
 
 First time only: `pipx install build twine`

@@ -118,13 +118,9 @@ def main():
   keyframeDts = {float(p[0]): float(p[1]) for p in packets if 'K' in p[2]}
   keyframes = sorted(keyframeDts)
 
-  lastFrameRaw = subprocess.run([
-    'ffprobe', '-v', 'quiet',
-    '-show_entries', 'format=duration',
-    '-of', 'csv=p=0',
-    str(video)
-  ], capture_output=True, text=True)
-  lastFrame = float(lastFrameRaw.stdout.strip())
+  # the video stream's own end: the container's duration also covers audio
+  # that runs past the last frame (common on YouTube), which isn't cut
+  lastFrame = probeDuration(video, 'v:0')
 
   # snap cut points to frame boundaries so audio and video drop exactly the
   # same duration, then merge overlapping/adjacent segments

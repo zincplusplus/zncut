@@ -23,19 +23,21 @@ def frameImage(n):
     im[180:220, 140:180] = 255
   return im
 
-@pytest.fixture(scope='session')
-def source(tmp_path_factory):
-  path = tmp_path_factory.mktemp('src') / 'src.mp4'
+def makeSource(path, audioSeconds):
   raw = b''.join(frameImage(n).tobytes() for n in range(FRAMES))
   beep = "if(lt(mod(t,1),0.05),0.8*sin(2*PI*1000*t),0)"
   subprocess.run([
     'ffmpeg', '-v', 'error', '-y',
     '-f', 'rawvideo', '-pix_fmt', 'gray', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
-    '-f', 'lavfi', '-i', f"aevalsrc='{beep}':s={RATE}:d={SECONDS}",
+    '-f', 'lavfi', '-i', f"aevalsrc='{beep}':s={RATE}:d={audioSeconds}",
     '-c:v', 'libx264', '-g', '60', '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac', '-shortest', str(path)
+    '-c:a', 'aac', str(path)
   ], input=raw, check=True)
   return path
+
+@pytest.fixture(scope='session')
+def source(tmp_path_factory):
+  return makeSource(tmp_path_factory.mktemp('src') / 'src.mp4', SECONDS)
 
 def keptFrames(segments):
   cut = set()
@@ -96,3 +98,10 @@ def test_cut_keeps_exactly_the_right_frames_with_audio_in_sync(source, tmp_path,
     assert beepsAt(audio, i / FPS), f'no beep at flash frame {i}'
   for t in beepOnsets(audio):
     assert min(abs(t - i / FPS) for i in flashes) < 0.010, f'beep at {t:.3f}s has no flash'
+
+def test_audio_running_past_the_last_frame_does_not_fail_the_cut(tmp_path):
+  # YouTube files often end with ~0.2s of audio after the last video frame
+  source = makeSource(tmp_path / 'tail.mp4', SECONDS + 0.2)
+  out = cut(source, tmp_path, '7.5-8.5,12-13')
+  numbers, _ = readFrames(out)
+  assert numbers == keptFrames('7.5-8.5,12-13')
